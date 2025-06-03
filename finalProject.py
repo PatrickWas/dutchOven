@@ -65,9 +65,9 @@ wowV = label(pos=vec(0, 0, 0), text="vol: " + V, xoffset=-20, yoffset=50, space=
 def bordercontrol(i):
     if abs(atomlist[i].pos.x) >= (ourbox.size.x / 2):
         atomlist[i].vel.x = -1 * atomlist[i].vel.x
-    elif abs(atomlist[i].pos.y) >= (ourbox.size.y / 2):
+    if abs(atomlist[i].pos.y) >= (ourbox.size.y / 2):
         atomlist[i].vel.y = -1 * atomlist[i].vel.y
-    elif abs(atomlist[i].pos.z) >= (ourbox.size.z / 2):
+    if abs(atomlist[i].pos.z) >= (ourbox.size.z / 2):
         atomlist[i].vel.z = -1 * atomlist[i].vel.z
     
 
@@ -77,14 +77,14 @@ ourbox = box(vol=V, size=vec(5, 5, 5), color=color.black, opacity=0.2)
 mass = 2.6567e-26
 rad = 6.6e-11
 V = (5)**3
-n = 5
+n = 30
 T = 30
 R = 0.0821
 
 atomlist = []
 for i in range(0, n):
     atomlist[i] = sphere(pos=vec(0, 0, 0), radius=0.1, color=color.cyan)
-    atomlist[i].vel = vector.random() * 2
+    atomlist[i].vel = vector.random() * 3
 
 dt = 0.01
 while True:

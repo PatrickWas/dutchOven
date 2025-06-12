@@ -1,0 +1,119 @@
+Web VPython 3.2
+
+scene.background=vec(1,1,1)
+
+
+mass = 2.6567e-26
+rad = 6.6e-11
+V = (rad*100)**3
+A = (rad*100)**2
+n = 100
+T = 30
+R = 8.314 # for cubic meters and pascals, not 0.0821 for liters and atmospheres
+
+visualRad = 0.05
+adjust = (visualRad + visualRad/sqrt(2)) / 2
+
+side = 2.5
+box(vol=V, size=vec(2*(side+adjust),2*(side+adjust),2*(side+adjust)), color=color.black, opacity=0.2)
+
+P = 0
+count = 0
+
+go = False
+
+def maxBoltz():
+    return 1000*vec(random()*2-1, random()*2-1, random()*2-1)
+
+def changeVel():
+    return vec(T-30, T-30, T-30)
+
+def randPos():
+    return random()*side*2-side
+
+alderaans = []
+for i in range(n):
+    alderaans.append(sphere(vel=maxBoltz(), radius=visualRad, m=mass, pos=vec(randPos(), randPos(), randPos()), color=color.cyan))
+
+
+#deathStar = sphere(vel=rand(), radius=0.5, m=mass, pos=vec(0,-1,0), texture="https://i.imgur.com/S9WXwf2.png")
+
+
+button(bind = setRun, text="Click to start the simulation\n")
+slide1 = slider(bind=something)
+slide1_caption = wtext(text="Temperature\n")
+slide2 = slider(bind=something)
+slide2_caption = wtext(text="Num. of particles\n")
+slide3 = slider(bind=something)
+slide3_caption = wtext(text="Volume\n")
+
+def setRun(b):
+    global go
+    go = not go
+    if go:
+        b.text = "Click to pause the simulation."
+    else:
+        b.text = "Click to resume the simulation."
+
+def something():
+    print("patrick sux.")
+
+
+t = 0
+dt = 0.0001
+while t < 10:
+    rate(50)
+    
+    if go:
+        for alderaan in alderaans:
+            alderaan.vel += changeVel()
+            
+        #deathStar.vel += changeVel()*dt
+        
+            newPos = alderaan.pos + alderaan.vel*dt
+            if abs(newPos.x) > side or abs(newPos.y) > side or abs(newPos.z) > side:
+                count += 1
+        #        if count == 1:
+         #           print("1 collision has occurred (pos is " + alderaan.pos + ")")
+          #      else:
+           #         print(count + " collisions have occurred")
+                frac = 1
+                
+                
+                tempSide = side
+                if abs(newPos.x) > side:
+                    if newPos.x < 0:
+                        tempSide *= -1
+                    frac = abs((tempSide - alderaan.pos.x) / (newPos.x - alderaan.pos.x))
+                    alderaan.pos += (alderaan.vel*dt*frac)
+                    acc = 2*abs(alderaan.vel.x)
+                    alderaan.vel.x *= -1
+                    
+                elif abs(newPos.y) > side:
+                    if newPos.y < 0:
+                        tempSide *= -1
+                    frac = abs((tempSide - alderaan.pos.y) / (newPos.y - alderaan.pos.y))
+                    alderaan.pos += (alderaan.vel*dt*frac)
+                    acc = 2*abs(alderaan.vel.y)
+                    alderaan.vel.y *= -1
+                
+                else:
+                    if newPos.z < 0:
+                        tempSide *= -1
+                    frac = abs((tempSide - alderaan.pos.z) / (newPos.z - alderaan.pos.z))
+                    alderaan.pos += (alderaan.vel*dt*frac)
+                    acc = 2*abs(alderaan.vel.z)
+                    alderaan.vel.z *= -1
+            
+                f = alderaan.m*acc
+                P += f
+                alderaan.pos += (alderaan.vel*dt*(1-frac))
+        
+            else:
+                alderaan.pos += (alderaan.vel*dt)
+        
+            t += dt
+            
+            
+print("P: " + P/A/t + "\nV: " + V + "\nn: " + n/6.02e23 + "\nR: " + R + "\nT: " + (T+273))
+print("Pressure should equal nRT/V: " + n/6.02e23*R*(T+273)/V)

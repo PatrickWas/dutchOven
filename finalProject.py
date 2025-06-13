@@ -1,67 +1,168 @@
 Web VPython 3.2
 
-scene = canvas(background=color.white)
 
-temperature = input("Give me your temperature") 
+# READ ME GOES HERE
+# READ ME GOES HERE
+# READ ME GOES HERE
+# READ ME GOES HERE
+# READ ME GOES HERE
+# READ ME GOES HERE
+# READ ME GOES HERE
 
-# the average speed is sqrt(3kT/m), given by the equation that we will be using , where T is the temperature in Kelvin, k is the Boltzmann constant, and m is the mass in kg)
-# velocities can be approximated using the normal distribution, but not the speed itself
-# use np.random.normal 
-# loc is the mean
+scene.background=vec(1,1,1)
 
-# boltzman constant: 1.380649 × 10-23 m2 kg s-2 K-1
-
-# bruh I can't even import 
-
-#example = np.random.normal(T)
-#print(example)
-
-# standard deviation = sqrt(kT/m)
+ourbox = box(size=vec(5, 5, 5), color=color.black, opacity=0.2)
 
 mass = 2.6567e-26
-kb = 1.380649e-23
-avgSpeed = 3 * kb * temperature / mass
-
-def randSpeed(temperature):
-    parity = 0
-    if random() > 0.5:
-        parity = 1
-    else:
-        parity = -1
-    return 
-
-mass = 2.6567e-26
-rad = 6.6e-11
-V = (rad*10)**3
-n = 5
+rad = 0.05
+V = (5)**3
+n = 80
+T = 300
 R = 0.0821
+particlemax = 500
+len = 5
 
-box(vol=V, size=vec(5,5,5), color=color.black, opacity=0.4)
+#############################
 
-go = True
+running = True
+choosing = True
 
-alderaans = []
-for i in range(n-1):
-    alderaans.append(sphere(m=mass, pos=vec((1.5*i)-2,1,0), texture=textures.earth, radius=0.2))
-    #alderaans.velocity = 
-
-deathStar = sphere(m=mass, pos=vec(2,-2,0), texture="https://i.imgur.com/S9WXwf2.png", radius=0.2)
-
-g = graph()
-k = gdots(graph = g)
+def Run(b):
+    global running
+    running = not running
+    if running: 
+        b.text = "Pause"
+        choices.disabled = True
+        tempslider.disabled = True
+        partslider.disabled = True
+        volslider.disabled = True
+        choices.selected = "Choose a variable"
+        print_options(delete=True)
+    else: 
+        b.text = "Run"
+        if choosing = True:
+            choices.disabled = False
     
+button(text = "Pause", pos = scene.title_anchor, bind = Run)
+
+def bindtemp(evt):
+    global T
+    T=evt.value
+    
+def bindpart(evt):
+    global n, atomlist
+    n=evt.value
+    for i in range(0, n):
+        atomlist[i].visible = True
+    for i in range(n, particlemax):
+        atomlist[i].visible = False
+
+def bindvol(evt):
+    global len, V, particlemax
+    len = evt.value
+    ourbox.size = vec(len, len, len)
+    V = (len)**3
+
+tempslider = slider(bind=bindtemp, min=0, max=100, value = T)
+tempslider_caption = wtext(text="Temperature\n")
+partslider = slider(bind=bindpart, min=1, max=particlemax, value = n, step = 1)
+partslider_caption = wtext(text="Num. of particles\n")
+volslider = slider(bind=bindvol, min=1, max=10, value = len)
+volslider_caption = wtext(text="Volume\n")
+
+tempslider.disabled = True
+partslider.disabled = True
+volslider.disabled = True
+
+def M(m):
+    global tempslider, partslider, volslider, running
+    tempslider.disabled = True
+    partslider.disabled = True
+    volslider.disabled = True
+    val = m.selected
+    if val == "Temperature": 
+        tempslider.disabled = False
+    elif val == "Number of particles": 
+        partslider.disabled = False
+    elif val == "Volume": 
+        volslider.disabled = False
+    choosing = False
+    choices.disabled = True
+    print("now you can only change THAT variable")
+
+choices = menu(choices=['Choose a variable', 'Temperature', 'Number of particles', 'Volume'], index=0, bind=M)
+choices.disabled = True
+
+wowT = label(pos=vec(0, 0, 0), text="temp: " + T, xoffset=20, yoffset=100, space=30, height=16, border=4, font='sans')
+wowN = label(pos=vec(0, 0, 0), text="num: " + n, xoffset=20, yoffset=-50, space=30, height=16, border=4, font='sans')
+wowV = label(pos=vec(0, 0, 0), text="vol: " + V, xoffset=-20, yoffset=50, space=30, height=16, border=4, font='sans')
+
+def bordercontrol(i):
+    if abs(atomlist[i].pos.x)+rad >= (ourbox.size.x / 2):
+        atomlist[i].vel.x = -1 * atomlist[i].vel.x
+    if abs(atomlist[i].pos.y)+rad >= (ourbox.size.y / 2):
+        atomlist[i].vel.y = -1 * atomlist[i].vel.y
+    if abs(atomlist[i].pos.z)+rad >= (ourbox.size.z / 2):
+        atomlist[i].vel.z = -1 * atomlist[i].vel.z
+    
+# RANDOM STUFF USING THE BOLTZMANN DISTRIBUTION
+# this is called rejection samping, make sure to talk about that in the README
+##############################
 def random_speed_from_temperature(T):
     v_peak = sqrt(T)
     f_max = (v_peak ** 2) * exp(-v_peak**2 / (2 * T))
-
     while True:
         v = 5 * sqrt(T) * random()
         f_v = (v ** 2) * exp(-v**2 / (2 * T))
         u = f_max * random()
         if u < f_v:
             return v
+##############################
 
-temperature = 300
-for i in range(30):
-    v_sample = random_speed_from_temperature(temperature)
-    print(f"Random particle speed: {v_sample:.2f}")
+atomlist = []
+x_average = 0
+y_average = 0
+z_average = 0
+for i in range(0, particlemax):
+    atomlist[i] = sphere(pos=vec(0, 0, 0), radius=rad, color=color.cyan)
+    x_vel = random_speed_from_temperature(T) * 2.7
+    x_average += x_vel
+    print("x_vel is: " + x_vel)
+    y_vel = random_speed_from_temperature(T) * 2.7
+    y_average += y_vel
+    print("y vel is: " + y_vel)
+    z_vel = random_speed_from_temperature(T) * 2.7
+    z_average += z_vel
+    print("z vel is: " + z_vel)
+    atomlist[i].vel = vec(x_vel,y_vel,z_vel)
+
+x_average /= 80
+y_average /= 80
+z_average /= 80
+
+print(x_average)
+print(y_average)
+print(z_average)
+
+    
+for i in range(n, particlemax):
+    atomlist[i].visible = False
+
+dt = 0.001
+while True:
+    rate(100)
+    wowT.text = "temp: " + T
+    wowN.text = "num: " + n
+    wowV.text = "vol: " + V
+    if running:
+        for i in range(0, particlemax):
+            atomlist[i].pos += atomlist[i].vel * dt
+            bordercontrol(i)
+    else:
+        for i in range(0, n):
+            atomlist[i].visible = True
+        for i in range(0, particlemax):
+            atomlist[i].pos.x = 0
+            atomlist[i].pos.y = 0
+            atomlist[i].pos.z = 0
+            

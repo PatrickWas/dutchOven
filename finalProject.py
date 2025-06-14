@@ -14,6 +14,7 @@ R = 0.0821
 particlemax = 500
 len = 5
 collisions = 0
+oldlen = 5
 
 ################################################################################
 
@@ -56,11 +57,16 @@ def bindpart(evt):
     nchanged = True
 
 def bindvol(evt):
-    global len, V, particlemax, vchanged
+    global len, V, particlemax, vchanged, atomlist, oldlen
     len = evt.value
     ourbox.size = vec(len, len, len)
     V = (len)**3
     vchanged = True
+    for i in range(0, particlemax):
+        atomlist[i].pos.x = atomlist[i].pos.x * len / oldlen
+        atomlist[i].pos.y = atomlist[i].pos.y * len / oldlen
+        atomlist[i].pos.z = atomlist[i].pos.z * len / oldlen
+    oldlen = len
 
 tempslider = slider(bind=bindtemp, min=0, max=100, value = T)
 tempslider_caption = wtext(text="Temperature\n")
@@ -142,7 +148,7 @@ while True:
     wowN.text = "num: " + n
     wowV.text = "vol: " + V
     if running:
-        for i in range(0, particlemax):
+        for i in range(0, n):
             atomlist[i].pos += atomlist[i].vel * dt
             bordercontrol(i)
         if tchanged:
@@ -154,16 +160,12 @@ while True:
         elif vchanged:
             vvpdot.plot(V, collisions)
             vchanged = False
-        if t >= oldt + 20 * dt:
+        if t >= oldt + 10 * dt:
             collisions = 0
             oldt = t
         t += dt
     else:
         for i in range(0, n):
             atomlist[i].visible = True
-        for i in range(0, particlemax):
-            atomlist[i].pos.x = 0
-            atomlist[i].pos.y = 0
-            atomlist[i].pos.z = 0
     
             

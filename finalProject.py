@@ -1,13 +1,28 @@
 Web VPython 3.2
 
+#############################
+# README
 
-# READ ME GOES HERE
-# READ ME GOES HERE
-# READ ME GOES HERE
-# READ ME GOES HERE
-# READ ME GOES HERE
-# READ ME GOES HERE
-# READ ME GOES HERE
+# Welcome to the ideal gas law project! 
+# This project models the relationship between number of particles and the average temperature of the particles with 
+# pressure. 
+
+# (INITIAL RUN) Upon running the program, the simulation will automatically start. One might notice 
+# that all the sliders and buttons are grayed out. This is because the user is restricted
+# from changing any of the variables of temperature or number of particles while the 
+# simulation is running. 
+
+# (SLIDER/BUTTON) By pressing the button labeled "Pause," the option to select a variable is unlocked. 
+# Clearly, only one variable can be changed at a time. One that variable is selected, all the others 
+# will remain grayed out while the chosen variable slider can be interacted with. 
+
+# (PARTICLE SPEEDS) Particles are given velocities corresponding to their average temperature using the 
+# Boltzmann distribution. This means that some particles move at a lower velocity than others, but 
+# their mean velocity is where you'd expect it to be. 
+
+# (GRAPHS) Once a variable is selected, only that graph will be drawn on. It will show the relationship between pressure 
+# and whatever variable is chosen. 
+#############################
 
 scene.background=vec(1,1,1)
 
@@ -109,7 +124,7 @@ def bordercontrol(i):
 # this is called rejection samping, make sure to talk about that in the README
 ##############################
 def random_speed_from_temperature(T):
-    v_peak = sqrt(T)
+    v_peak = sqrt(T) * 30
     f_max = (v_peak ** 2) * exp(-v_peak**2 / (2 * T))
     while True:
         v = 5 * sqrt(T) * random()
@@ -125,20 +140,20 @@ y_average = 0
 z_average = 0
 for i in range(0, particlemax):
     atomlist[i] = sphere(pos=vec(0, 0, 0), radius=rad, color=color.cyan)
-    x_vel = random_speed_from_temperature(T) * 2.7
+    x_vel = random_speed_from_temperature(T)
     x_average += x_vel
     print("x_vel is: " + x_vel)
-    y_vel = random_speed_from_temperature(T) * 2.7
+    y_vel = random_speed_from_temperature(T)
     y_average += y_vel
     print("y vel is: " + y_vel)
-    z_vel = random_speed_from_temperature(T) * 2.7
+    z_vel = random_speed_from_temperature(T)
     z_average += z_vel
     print("z vel is: " + z_vel)
     atomlist[i].vel = vec(x_vel,y_vel,z_vel)
 
-x_average /= 80
-y_average /= 80
-z_average /= 80
+x_average /= 500
+y_average /= 500
+z_average /= 500
 
 print(x_average)
 print(y_average)

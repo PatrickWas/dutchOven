@@ -1,0 +1,253 @@
+Web VPython 3.2
+
+
+#READ-ME
+
+
+
+scene.background = color.white
+scene.align = 'left'
+
+
+mass = 2.6567e-26
+rad = 6.6e-11
+V = (rad*100)**3
+prevV = V
+A = (rad*100)**2
+n = 50
+prevn = n
+T = 30
+prevT = T
+R = 8.314 # for cubic meters and pascals, not the 0.0821 used for liters and atmospheres
+particlemax = 250
+
+len = 5
+
+
+visualRad = 0.05
+adjust = (visualRad + visualRad/sqrt(2)) / 2
+
+fullSide = visualRad*100
+side = fullSide/2
+box(size=vec(fullSide+2*adjust,fullSide+2*adjust,fullSide+2*adjust), color=color.black, opacity=0.2)
+
+
+running = True
+choosing = True
+tchanged = False
+nchanged = False
+schanged = False
+
+
+def Run(b):
+    global running
+    running = not running
+    if running: 
+        b.text = "Pause"
+        choices.disabled = True
+        tempslider.disabled = True
+        partslider.disabled = True
+        sideslider.disabled = True
+        choices.selected = "Choose a variable"
+        print_options(delete=True)
+    else: 
+        b.text = "Run"
+        if choosing = True:
+            choices.disabled = False
+    
+button(text = "Pause", pos = scene.title_anchor, bind = Run)
+
+def bindtemp(evt):
+    global T, prevT, tchanged
+    prevT = T
+    T=evt.value
+    tchanged = True
+    for i in range(0, particlemax):
+        alderaans[i].vel = vec(vel_from_temp(T+273), vel_from_temp(T+273), vel_from_temp(T+273))
+    
+def bindpart(evt):
+    global n, prevn, alderaans, nchanged
+    prevn = n
+    n=evt.value
+    for i in range(0, n):
+        alderaans[i].visible = True
+    for i in range(n, particlemax):
+        alderaans[i].visible = False
+    nchanged = True
+
+def bindside(evt):
+    global len, V, prevV, particlemax, schanged
+    prevV = V
+    len = evt.value
+    ourbox.size = vec(len, len, len)
+    V = (len)**3
+    schanged = True
+
+tempslider = slider(bind=bindtemp, min=-150, max=150, value = T)
+tempslider_caption = wtext(text="Temperature\n")
+partslider = slider(bind=bindpart, min=1, max=particlemax, value = n, step = 1)
+partslider_caption = wtext(text="Num. of particles\n")
+sideslider = slider(bind=bindside, min=1, max=10, value = fullSide)
+sideslider_caption = wtext(text="Side length\n")
+
+tempslider.disabled = True
+partslider.disabled = True
+sideslider.disabled = True
+
+def M(m):
+    global tempslider, partslider, sideslider, running, tchanged, nchanged, schanged
+    tempslider.disabled = True
+    partslider.disabled = True
+    sideslider.disabled = True
+    val = m.selected
+    if val == "Temperature": 
+        tempslider.disabled = False
+        tchanged = True
+    elif val == "Number of particles": 
+        partslider.disabled = False
+        nchanged = True
+    elif val == "Side length": 
+        sideslider.disabled = False
+        schanged = True
+    choosing = False
+    choices.disabled = True
+    
+choices = menu(choices=['Choose a variable', 'Temperature', 'Number of particles', 'Side Length'], index=0, bind=M)
+choices.disabled = True
+
+wowT = label(pos=vec(0, 0, 0), text="temp: " + T, xoffset=20, yoffset=100, space=30, height=16, border=4, font='sans')
+wowN = label(pos=vec(0, 0, 0), text="num: " + n, xoffset=20, yoffset=-50, space=30, height=16, border=4, font='sans')
+wowS = label(pos=vec(0, 0, 0), text="length: " + fullSide, xoffset=-20, yoffset=50, space=30, height=16, border=4, font='sans')
+
+###################################################
+
+P = 0
+count = 0
+
+''' vel_from_temp gives proportionally accurate answers, but they're approximately that amount too small:
+         The correct speed at 30 *C is 500 m/s, which componently is sqrt(290^2+290^2+290^2).
+         The function's component speed at 30 *C is ~28 m/s.
+'''
+proportion = 290/28
+
+###################################################
+
+tvp = graph(title = "Temperature v Pressure", xtitle = "Temperature (C)", ytitle = "Pressure (Pascals)", width = 450, height = 400, align = 'right')
+nvp = graph(title = "Number of Particles v Pressure", xtitle = "Number of Moles (mol)", ytitle = "Pressure (Pascals)", width = 450, height = 400, align = 'right')
+vvp = graph(title = "Volume v Pressure", xtitle = "Volume (m\u00b3)", ytitle = "Pressure (Pascals)", width = 450, height = 400, align = 'right')
+
+tvpdot = gdots(graph = tvp, color = color.red)
+nvpdot = gdots(graph = nvp, color = color.red)
+vvpdot = gdots(graph = vvp, color = color.red)
+    
+#tvpdot.plot(0, 0)
+#nvpdot.plot(0, 0)
+#vvpdot.plot(0, 0)
+
+
+# RANDOM STUFF USING THE BOLTZMANN DISTRIBUTION
+##############################
+def vel_from_temp(T):
+    v_peak = sqrt(T)
+    f_max = (v_peak ** 2) * exp(-v_peak**2 / (2 * T))
+    while True:
+        v = 5 * sqrt(T) * random()
+        f_v = (v ** 2) * exp(-v**2 / (2 * T))
+        u = f_max * random()
+        if u < f_v:
+            if random() < 0.5:
+                return v
+            return -v
+##############################
+
+
+def randPos():
+    return random()*side*2-side
+
+alderaans = []
+for i in range(0, particlemax):
+    alderaans.append(sphere(vel=vec(vel_from_temp(T+273), vel_from_temp(T+273), vel_from_temp(T+273)), radius=visualRad, pos=vec(randPos(), randPos(), randPos()), color=color.cyan))
+    
+for i in range(n, particlemax):
+    alderaans[i].visible = False
+
+
+
+t = 0
+dt = 0.001
+while True:
+    rate(1/dt)
+    wowT.text = "temp: " + T
+    wowN.text = "num: " + n
+    wowS.text = "side: " + fullSide
+    
+    if running:
+        for i in range(0, n):
+            
+        
+            newPos = alderaans[i].pos + alderaans[i].vel*dt
+            if abs(newPos.x) > side or abs(newPos.y) > side or abs(newPos.z) > side:
+                count += 1
+                frac = 1
+                
+                
+                tempSide = side
+                if abs(newPos.x) > side:
+                    if newPos.x < 0:
+                        tempSide *= -1
+                    frac = abs((tempSide - alderaans[i].pos.x) / (newPos.x - alderaans[i].pos.x))
+                    alderaans[i].pos += (alderaans[i].vel*dt*frac)
+                    acc = 2*abs(alderaans[i].vel.x)
+                    alderaans[i].vel.x *= -1
+                    
+                elif abs(newPos.y) > side:
+                    if newPos.y < 0:
+                        tempSide *= -1
+                    frac = abs((tempSide - alderaans[i].pos.y) / (newPos.y - alderaans[i].pos.y))
+                    alderaans[i].pos += (alderaans[i].vel*dt*frac)
+                    acc = 2*abs(alderaans[i].vel.y)
+                    alderaans[i].vel.y *= -1
+                
+                else:
+                    if newPos.z < 0:
+                        tempSide *= -1
+                    frac = abs((tempSide - alderaans[i].pos.z) / (newPos.z - alderaans[i].pos.z))
+                    alderaans[i].pos += (alderaans[i].vel*dt*frac)
+                    acc = 2*abs(alderaans[i].vel.z)
+                    alderaans[i].vel.z *= -1
+            
+                P += (mass*acc)
+                alderaans[i].pos += (alderaans[i].vel*dt*(1-frac))
+        
+            else:
+                alderaans[i].pos += (alderaans[i].vel*dt)
+        
+        t += dt        
+        
+        if tchanged:
+            tvpdot.plot(prevT, (proportion**2)*P/A/t/(rad*100))
+            tchanged = False
+            P = 0
+            t = 0
+        elif nchanged:
+            nvpdot.plot(prevn, (proportion**2)*P/A/t/(rad*100))
+            nchanged = False
+            P = 0
+            t = 0
+        elif vchanged:
+            vvpdot.plot(prevV, (proportion**2)*P/A/t/(rad*100))
+            vchanged = False
+            P = 0
+            t = 0
+        
+    
+    '''else:
+        for i in range(0, n):
+            alderaans[i].visible = True
+        for i in range(0, particlemax):
+            alderaans[i].pos = vec(randPos(), randPos(), randPos())'''
+
+        
+        
+print("P: " + (proportion**2)*P/A/t/(rad*100) + "\nV: " + V + "\nn: " + n/6.02e23 + "\nR: " + R + "\nT: " + (T+273))
+print("Pressure should equal nRT/V: " + n/6.02e23*R*(T+273)/V)
